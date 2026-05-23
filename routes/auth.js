@@ -1,8 +1,7 @@
-const express = require("express");
+
+   const express = require("express");
 
 const router = express.Router();
-
-const bcrypt = require("bcryptjs");
 
 const jwt = require("jsonwebtoken");
 
@@ -10,61 +9,40 @@ const User = require("../models/User");
 
 const Note = require("../models/Note");
 
-const authMiddleware = require("../middleware/authMiddleware");
+const authMiddleware =
+require("../middleware/authMiddleware");
 
 
-
-// ================= SIGNUP =================
 
 router.post("/signup", async (req, res) => {
 
   try {
 
-    const { name, email, password } = req.body;
+    const { name, email, password } =
+      req.body;
 
 
 
-    const userExists = await User.findOne({
-      email
-    });
-
-
-
-    if (userExists) {
-
-      return res.send({
-        message: "User Already Exists"
-      });
-
-    }
-
-
-
-    const hashedPassword = await bcrypt.hash(
-      password,
-      10
-    );
-
-
-
-    const newUser = new User({
+    const user = new User({
 
       name,
       email,
-      password: hashedPassword
+      password
 
     });
 
 
 
-    await newUser.save();
+    await user.save();
 
 
 
     const token = jwt.sign(
 
       {
-        id: newUser._id
+
+        id:user._id
+
       },
 
       "secretkey"
@@ -74,8 +52,6 @@ router.post("/signup", async (req, res) => {
 
 
     res.send({
-
-      message: "Registration Successful",
 
       token
 
@@ -91,46 +67,30 @@ router.post("/signup", async (req, res) => {
 
 
 
-// ================= LOGIN =================
-
 router.post("/login", async (req, res) => {
 
   try {
 
-    const { email, password } = req.body;
+    const { email, password } =
+      req.body;
 
 
 
     const user = await User.findOne({
-      email
+
+      email,
+      password
+
     });
 
 
 
     if (!user) {
 
-      return res.send({
-        message: "User Not Found"
-      });
+      return res.status(400).send({
 
-    }
+        message:"Invalid Credentials"
 
-
-
-    const isMatch = await bcrypt.compare(
-
-      password,
-
-      user.password
-
-    );
-
-
-
-    if (!isMatch) {
-
-      return res.send({
-        message: "Invalid Credentials"
       });
 
     }
@@ -140,7 +100,9 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
 
       {
-        id: user._id
+
+        id:user._id
+
       },
 
       "secretkey"
@@ -150,8 +112,6 @@ router.post("/login", async (req, res) => {
 
 
     res.send({
-
-      message: "Login Successful",
 
       token
 
@@ -166,8 +126,6 @@ router.post("/login", async (req, res) => {
 });
 
 
-
-// ================= CREATE NOTE =================
 
 router.post(
 
@@ -179,17 +137,16 @@ router.post(
 
     try {
 
-      const { title, content } = req.body;
+      const { title, content } =
+        req.body;
 
 
 
       const newNote = new Note({
 
         title,
-
         content,
-
-        userId: req.user.id
+        userId:req.user.id
 
       });
 
@@ -201,7 +158,9 @@ router.post(
 
       res.send({
 
-        message: "Note Saved"
+        success:true,
+
+        message:"Note Saved"
 
       });
 
@@ -212,12 +171,9 @@ router.post(
     }
 
   }
-
 );
 
 
-
-// ================= GET NOTES =================
 
 router.get(
 
@@ -231,7 +187,7 @@ router.get(
 
       const notes = await Note.find({
 
-        userId: req.user.id
+        userId:req.user.id
 
       });
 
@@ -246,7 +202,41 @@ router.get(
     }
 
   }
+);
 
+
+
+router.delete(
+
+  "/delete-note/:id",
+
+  authMiddleware,
+
+  async (req, res) => {
+
+    try {
+
+      await Note.findByIdAndDelete(
+
+        req.params.id
+
+      );
+
+
+
+      res.send({
+
+        message:"Deleted"
+
+      });
+
+    } catch (error) {
+
+      res.status(500).send(error);
+
+    }
+
+  }
 );
 
 

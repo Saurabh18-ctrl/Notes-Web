@@ -1,16 +1,34 @@
 const mongoose = require("mongoose");
 
-const noteSchema = new mongoose.Schema({
 
-  title: String,
 
-  content: String,
+const noteSchema = new mongoose.Schema(
 
-  userId: String
+  {
 
-});
+    title:String,
 
-module.exports = mongoose.model(
+    content:String,
+
+    userId:String
+
+  },
+
+  {
+
+    timestamps:true
+
+  }
+
+);
+
+
+
+module.exports =
+mongoose.model(
+
   "Note",
+
   noteSchema
+
 );

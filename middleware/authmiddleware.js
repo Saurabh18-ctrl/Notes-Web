@@ -1,40 +1,24 @@
 const jwt = require("jsonwebtoken");
 
-
-
-module.exports = (req, res, next) => {
+module.exports = function(req, res, next) {
 
   try {
 
-    const token = req.headers.token;
-
-
+    const token =
+      req.header("token");
 
     if (!token) {
 
       return res.status(401).send({
-
-        message:"No Token"
-
+        message: "No Token"
       });
 
     }
 
-
-
-    const verified = jwt.verify(
-
-      token,
-
-      "secretkey"
-
-    );
-
-
+    const verified =
+      jwt.verify(token, "secretkey");
 
     req.user = verified;
-
-
 
     next();
 
